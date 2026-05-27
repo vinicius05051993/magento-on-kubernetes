@@ -1,0 +1,58 @@
+namespace: magento
+
+replicaCount: 1
+
+image:
+  repository: magento-php
+  tag: 2.4.9-php8.3
+  pullPolicy: Never
+
+nginx:
+  image: nginx:stable
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: true
+
+  className: nginx
+
+  host: magento.local
+
+mysql:
+  host: mysql
+  database: magento
+  user: magento
+  password: magento123
+
+redis:
+  host: redis
+  port: 6379
+
+opensearch:
+  host: opensearch
+  port: 9200
+
+magento:
+  edition: community
+
+  version: 2.4.9
+
+  mode: developer
+
+  repo:
+    publicKey: ee65270ec48a5d928415e00dfbd7898a
+    privateKey: 112b4ccfee3e8b317204f03f63121bbe
+
+  admin:
+    firstname: Admin
+    lastname: User
+    email: admin@example.com
+    user: admin
+    password: Admin123!
+    backend: painel
+    timezone: America/Sao_Paulo
+    currency: BRL
+    language: pt_BR

@@ -1,0 +1,11 @@
+apiVersion: v2
+
+name: magento
+
+description: Magento 2.4.9 Community Kubernetes Environment
+
+type: application
+
+version: 0.1.0
+
+appVersion: "2.4.9"

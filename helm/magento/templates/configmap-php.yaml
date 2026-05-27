@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+
+metadata:
+  name: magento-php-config
+
+data:
+  php.ini: |
+    memory_limit=4G
+    max_execution_time=1800
+    upload_max_filesize=64M
+    post_max_size=64M
+
+    opcache.enable=1
+    opcache.validate_timestamps=1

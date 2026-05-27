@@ -1,0 +1,85 @@
+apiVersion: v1
+kind: ConfigMap
+
+metadata:
+  name: magento-nginx
+
+data:
+  default.conf: |
+    server {
+
+        listen 80;
+
+        server_name {{ .Values.ingress.host }};
+
+        root /var/www/html/pub;
+
+        index index.php;
+
+        charset utf-8;
+
+        client_max_body_size 64M;
+
+        access_log /var/log/nginx/access.log;
+        error_log /var/log/nginx/error.log;
+
+        location / {
+            try_files $uri $uri/ /index.php?$args;
+        }
+
+        location /static/ {
+
+            expires max;
+
+            location ~ ^/static/version {
+                rewrite ^/static/(version[^/]+/)?(.*)$ /static/$2 last;
+            }
+
+            location ~* \.(ico|jpg|jpeg|png|gif|svg|js|css|webp|avif)$ {
+
+                add_header Cache-Control "public";
+
+                expires +1y;
+
+                access_log off;
+
+                try_files $uri $uri/ /static.php?resource=$uri&$args;
+            }
+
+            try_files $uri $uri/ /static.php?resource=$uri&$args;
+        }
+
+        location /media/ {
+
+            try_files $uri $uri/ /get.php?$args;
+
+            expires max;
+
+            access_log off;
+        }
+
+        location ~ \.php$ {
+
+            try_files $uri =404;
+
+            fastcgi_pass 127.0.0.1:9000;
+
+            fastcgi_index index.php;
+
+            include fastcgi_params;
+
+            fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+            fastcgi_param PHP_FLAG "session.auto_start=off";
+            fastcgi_param PHP_VALUE "memory_limit=756M";
+
+            fastcgi_buffers 16 16k;
+            fastcgi_buffer_size 32k;
+
+            fastcgi_read_timeout 600s;
+            fastcgi_send_timeout 600s;
+        }
+
+        location ~* /\.(htaccess|git) {
+            deny all;
+        }
+    }

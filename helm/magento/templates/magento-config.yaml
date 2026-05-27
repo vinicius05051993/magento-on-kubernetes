@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: ConfigMap
+
+metadata:
+  name: magento-config
+
+data:
+  MYSQL_HOST: {{ .Values.mysql.host | quote }}
+
+  MYSQL_DATABASE: {{ .Values.mysql.database | quote }}
+
+  MYSQL_USER: {{ .Values.mysql.user | quote }}
+
+  REDIS_HOST: {{ .Values.redis.host | quote }}
+
+  REDIS_PORT: {{ .Values.redis.port | quote }}
+
+  OPENSEARCH_HOST: {{ .Values.opensearch.host | quote }}
+
+  OPENSEARCH_PORT: {{ .Values.opensearch.port | quote }}
+
+  MAGENTO_BASE_URL: "http://{{ .Values.ingress.host }}"
+
+  MAGENTO_LANGUAGE: {{ .Values.magento.admin.language | quote }}
+
+  MAGENTO_CURRENCY: {{ .Values.magento.admin.currency | quote }}
+
+  MAGENTO_TIMEZONE: {{ .Values.magento.admin.timezone | quote }}
+
+  MAGENTO_BACKEND_FRONTNAME: {{ .Values.magento.admin.backend | quote }}
+
+  MAGENTO_ADMIN_FIRSTNAME: {{ .Values.magento.admin.firstname | quote }}
+
+  MAGENTO_ADMIN_LASTNAME: {{ .Values.magento.admin.lastname | quote }}
+
+  MAGENTO_ADMIN_EMAIL: {{ .Values.magento.admin.email | quote }}
+
+  MAGENTO_ADMIN_USER: {{ .Values.magento.admin.user | quote }}

@@ -1,0 +1,85 @@
+apiVersion: apps/v1
+kind: StatefulSet
+
+metadata:
+  name: opensearch
+  namespace: magento
+
+spec:
+  serviceName: opensearch
+
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: opensearch
+
+  template:
+    metadata:
+      labels:
+        app: opensearch
+
+    spec:
+      containers:
+        - name: opensearch
+
+          image: opensearchproject/opensearch:2
+
+          env:
+            - name: discovery.type
+              value: single-node
+
+            - name: plugins.security.disabled
+              value: "true"
+
+            - name: bootstrap.memory_lock
+              value: "false"
+
+            - name: OPENSEARCH_INITIAL_ADMIN_PASSWORD
+              value: "Magento@OpenSearch2026#Strong"
+
+            - name: OPENSEARCH_JAVA_OPTS
+              value: "-Xms512m -Xmx512m"
+
+          ports:
+            - containerPort: 9200
+
+          volumeMounts:
+            - name: opensearch-storage
+              mountPath: /usr/share/opensearch/data
+
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 9200
+
+            initialDelaySeconds: 30
+            periodSeconds: 10
+
+          livenessProbe:
+            tcpSocket:
+              port: 9200
+
+            initialDelaySeconds: 60
+            periodSeconds: 20
+
+          resources:
+            requests:
+              memory: "1Gi"
+              cpu: "500m"
+
+            limits:
+              memory: "2Gi"
+              cpu: "1500m"
+
+  volumeClaimTemplates:
+    - metadata:
+        name: opensearch-storage
+
+      spec:
+        accessModes:
+          - ReadWriteOnce
+
+        resources:
+          requests:
+            storage: 20Gi

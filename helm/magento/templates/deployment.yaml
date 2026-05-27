@@ -1,0 +1,122 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: magento
+
+spec:
+  replicas: {{ .Values.replicaCount }}
+
+  selector:
+    matchLabels:
+      app: magento
+
+  template:
+
+    metadata:
+      labels:
+        app: magento
+
+    spec:
+
+      securityContext:
+        fsGroup: 33
+
+      initContainers:
+
+        - name: wait-magento-install
+
+          image: busybox
+
+          command:
+            - sh
+            - -c
+            - |
+              until [ -f /var/www/html/app/etc/env.php ]; do
+                echo "Waiting Magento installation..."
+                sleep 5
+              done
+
+          volumeMounts:
+
+            - name: magento-src
+              mountPath: /var/www/html
+
+      containers:
+
+        - name: php
+
+          securityContext:
+            runAsUser: 33
+            runAsGroup: 33
+
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+
+          ports:
+            - containerPort: 9000
+
+          envFrom:
+
+            - configMapRef:
+                name: magento-config
+
+            - secretRef:
+                name: magento-secret
+
+          readinessProbe:
+            tcpSocket:
+              port: 9000
+
+            initialDelaySeconds: 10
+            periodSeconds: 5
+
+          livenessProbe:
+            tcpSocket:
+              port: 9000
+
+            initialDelaySeconds: 20
+            periodSeconds: 10
+
+          volumeMounts:
+
+            - name: magento-src
+              mountPath: /var/www/html
+
+            - name: php-config
+              mountPath: /usr/local/etc/php/php.ini
+              subPath: php.ini
+
+        - name: nginx
+
+          image: {{ .Values.nginx.image | quote }}
+
+          ports:
+            - containerPort: 80
+
+          volumeMounts:
+
+            - name: magento-src
+              mountPath: /var/www/html
+
+            - name: nginx-config
+              mountPath: /etc/nginx/conf.d/default.conf
+              subPath: default.conf
+
+      volumes:
+
+        - name: magento-src
+
+          persistentVolumeClaim:
+            claimName: magento-src
+
+        - name: nginx-config
+
+          configMap:
+            name: magento-nginx
+
+        - name: php-config
+
+          configMap:
+            name: magento-php-config

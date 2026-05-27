@@ -1,0 +1,52 @@
+apiVersion: batch/v1
+kind: Job
+
+metadata:
+  name: magento-install
+
+spec:
+  backoffLimit: 1
+
+  template:
+
+    metadata:
+      labels:
+        app: magento-install
+
+    spec:
+
+      restartPolicy: Never
+
+      securityContext:
+        fsGroup: 33
+
+      containers:
+
+        - name: magento-install
+
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+
+          command:
+            - /usr/local/bin/job-install-magento.sh
+
+          envFrom:
+
+            - configMapRef:
+                name: magento-config
+
+            - secretRef:
+                name: magento-secret
+
+          volumeMounts:
+
+            - name: magento-src
+              mountPath: /var/www/html
+
+      volumes:
+
+        - name: magento-src
+
+          persistentVolumeClaim:
+            claimName: magento-src
