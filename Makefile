@@ -52,5 +52,8 @@ install-magento-logs:
 uninstall-magento:
 	helm uninstall magento -n magento
 
+see-pods:
+	kubectl get pods -n magento
+
 delete-magento-pods:
 	kubectl delete pod -n magento -l app=magento
