@@ -24,6 +24,28 @@ spec:
 
       initContainers:
 
+        - name: copy-magento-source
+
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+
+          command:
+            - sh
+            - -c
+            - |
+              if [ ! -f /mnt/app/bin/magento ]; then
+                echo "Copying Magento source..."
+                rsync -a /var/www/html/ /mnt/app/
+              else
+                echo "Magento source already exists"
+              fi
+
+          volumeMounts:
+
+            - name: magento-src
+              mountPath: /mnt/app
+
         - name: wait-magento-install
 
           image: busybox

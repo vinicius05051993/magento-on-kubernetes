@@ -20,6 +20,30 @@ spec:
       securityContext:
         fsGroup: 33
 
+      initContainers:
+
+        - name: copy-magento-source
+
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+
+          command:
+            - sh
+            - -c
+            - |
+              if [ ! -f /mnt/app/bin/magento ]; then
+                echo "Copying Magento source..."
+                cp -R /var/www/html/. /mnt/app/
+              else
+                echo "Magento source already exists"
+              fi
+
+          volumeMounts:
+
+            - name: magento-src
+              mountPath: /mnt/app
+
       containers:
 
         - name: magento-install

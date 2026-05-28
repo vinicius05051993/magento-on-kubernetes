@@ -3,9 +3,9 @@ namespace: magento
 replicaCount: 1
 
 image:
-  repository: magento-php
+  repository: ghcr.io/vinicius05051993/magento-php
   tag: 2.4.9-php8.3
-  pullPolicy: Never
+  pullPolicy: Always
 
 nginx:
   image: nginx:stable
