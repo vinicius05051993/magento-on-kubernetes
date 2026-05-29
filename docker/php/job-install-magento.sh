@@ -78,6 +78,8 @@ if [ ! -s app/etc/env.php ] || ! grep -q "'crypt'" app/etc/env.php; then
 
     echo "Deploying static content..."
 
+    sleep 30
+
     php -d memory_limit=-1 \
       bin/magento setup:static-content:deploy -f pt_BR en_US
 
