@@ -96,7 +96,7 @@ if [ ! -s app/etc/env.php ] || ! grep -q "'crypt'" app/etc/env.php; then
 
     echo "Fixing permissions..."
 
-    chown -R 33:33 /var/www/html
+    chown -R 33:33 app/etc pub/media
 
 else
 
