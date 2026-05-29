@@ -42,10 +42,6 @@ magento:
 
   mode: developer
 
-  repo:
-    publicKey: ee65270ec48a5d928415e00dfbd7898a
-    privateKey: 112b4ccfee3e8b317204f03f63121bbe
-
   admin:
     firstname: Admin
     lastname: User
