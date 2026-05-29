@@ -43,7 +43,7 @@ done
 
 echo "Redis OK"
 
-if [ ! -f app/etc/env.php ]; then
+if [ ! -s app/etc/env.php ] || ! grep -q "'crypt'" app/etc/env.php; then
 
     echo "Magento not installed"
 
@@ -97,6 +97,10 @@ if [ ! -f app/etc/env.php ]; then
     echo "Fixing permissions..."
 
     chown -R 33:33 /var/www/html
+
+else
+
+    echo "Magento already installed"
 
 fi
 
