@@ -24,7 +24,7 @@ spec:
 
       initContainers:
 
-        - name: copy-magento-source
+        - name: copy-magento-code
 
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
 
@@ -34,17 +34,12 @@ spec:
             - sh
             - -c
             - |
-              if [ ! -f /mnt/app/bin/magento ]; then
-                echo "Copying Magento source..."
-                rsync -a /var/www/html/ /mnt/app/
-              else
-                echo "Magento source already exists"
-              fi
+              cp -a /var/www/html/. /mnt/html/
 
           volumeMounts:
 
-            - name: magento-src
-              mountPath: /mnt/app
+            - name: magento-code
+              mountPath: /mnt/html
 
         - name: wait-magento-install
 
@@ -54,15 +49,15 @@ spec:
             - sh
             - -c
             - |
-              until [ -f /var/www/html/app/etc/env.php ]; do
+              until [ -s /mnt/etc/env.php ]; do
                 echo "Waiting Magento installation..."
                 sleep 5
               done
 
           volumeMounts:
 
-            - name: magento-src
-              mountPath: /var/www/html
+            - name: magento-etc
+              mountPath: /mnt/etc
 
       containers:
 
@@ -75,6 +70,9 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
 
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+
+          resources:
+{{- toYaml .Values.resources | nindent 12 }}
 
           ports:
             - containerPort: 9000
@@ -103,8 +101,20 @@ spec:
 
           volumeMounts:
 
-            - name: magento-src
+            - name: magento-code
               mountPath: /var/www/html
+
+            - name: magento-etc
+              mountPath: /var/www/html/app/etc
+
+            - name: magento-media
+              mountPath: /var/www/html/pub/media
+
+            - name: magento-static
+              mountPath: /var/www/html/pub/static
+
+            - name: magento-generated
+              mountPath: /var/www/html/generated
 
             - name: php-config
               mountPath: /usr/local/etc/php/php.ini
@@ -119,8 +129,20 @@ spec:
 
           volumeMounts:
 
-            - name: magento-src
+            - name: magento-code
               mountPath: /var/www/html
+
+            - name: magento-etc
+              mountPath: /var/www/html/app/etc
+
+            - name: magento-media
+              mountPath: /var/www/html/pub/media
+
+            - name: magento-static
+              mountPath: /var/www/html/pub/static
+
+            - name: magento-generated
+              mountPath: /var/www/html/generated
 
             - name: nginx-config
               mountPath: /etc/nginx/conf.d/default.conf
@@ -128,10 +150,29 @@ spec:
 
       volumes:
 
-        - name: magento-src
+        - name: magento-code
+
+          emptyDir: {}
+
+        - name: magento-etc
 
           persistentVolumeClaim:
-            claimName: magento-src
+            claimName: magento-etc
+
+        - name: magento-media
+
+          persistentVolumeClaim:
+            claimName: magento-media
+
+        - name: magento-static
+
+          persistentVolumeClaim:
+            claimName: magento-static
+
+        - name: magento-generated
+
+          persistentVolumeClaim:
+            claimName: magento-generated
 
         - name: nginx-config
 

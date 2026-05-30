@@ -46,6 +46,9 @@ insert-magento-url-hosts:
 install-magento:
 	helm install magento ./helm/magento -n magento
 
+update-magento:
+	helm upgrade --install magento ./helm/magento -n magento
+
 install-magento-logs:
 	kubectl logs -f job/magento-install -n magento
 

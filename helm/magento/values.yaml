@@ -52,3 +52,12 @@ magento:
     timezone: America/Sao_Paulo
     currency: BRL
     language: pt_BR
+
+resources:
+  requests:
+    cpu: "500m"
+    memory: "1Gi"
+
+  limits:
+    cpu: "2"
+    memory: "3Gi"
