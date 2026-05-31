@@ -76,29 +76,7 @@ if [ ! -s app/etc/env.php ] || ! grep -q "'crypt'" app/etc/env.php; then
       --session-save-redis-host="$REDIS_HOST" \
       --session-save-redis-db=2
 
-    echo "Deploying static content..."
-
-    sleep 30
-
-    php -d memory_limit=-1 \
-      bin/magento setup:static-content:deploy -f pt_BR en_US
-
-    echo "Running DI compile..."
-
-    php -d memory_limit=-1 \
-      bin/magento setup:di:compile
-
-    echo "Reindexing..."
-
-    php bin/magento indexer:reindex
-
-    echo "Flushing cache..."
-
-    php bin/magento cache:flush
-
-    echo "Fixing permissions..."
-
-    chown -R 33:33 app/etc pub/media
+    echo "Magento installed"
 
 else
 
@@ -106,4 +84,38 @@ else
 
 fi
 
-echo "Magento installation job finished"
+if [ ! -d generated/code ] || [ -z "$(find generated/code -type f 2>/dev/null)" ]; then
+
+    echo "Running DI compile..."
+
+    php -d memory_limit=-1 \
+      bin/magento setup:di:compile
+
+else
+
+    echo "Generated code already exists"
+
+fi
+
+if [ ! -d pub/static/frontend ] || [ -z "$(find pub/static/frontend -type f 2>/dev/null)" ]; then
+
+    echo "Deploying static content..."
+
+    sleep 30
+
+    php -d memory_limit=-1 \
+      bin/magento setup:static-content:deploy -f pt_BR en_US
+
+else
+
+    echo "Static content already exists"
+
+fi
+
+echo "Fixing permissions..."
+
+chown -R 33:33 app/etc pub/media generated pub/static
+
+echo "Magento bootstrap finished"
+
+exec php-fpm

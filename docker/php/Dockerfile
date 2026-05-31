@@ -85,4 +85,4 @@ RUN composer create-project \
 
 RUN chown -R 33:33 /var/www/html
 
-CMD ["php-fpm"]
+CMD ["/usr/local/bin/job-install-magento.sh"]
