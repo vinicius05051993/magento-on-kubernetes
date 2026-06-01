@@ -1,6 +1,6 @@
 namespace: magento
 
-replicaCount: 1
+replicaCount: 3
 
 image:
   repository: ghcr.io/vinicius05051993/magento-php
@@ -26,6 +26,7 @@ mysql:
   database: magento
   user: magento
   password: magento123
+  crypt: base64I4vCIg81qX3XkPfO0rzMYsvM0c/nqVomOIPJMEXX6W4=
 
 redis:
   host: redis

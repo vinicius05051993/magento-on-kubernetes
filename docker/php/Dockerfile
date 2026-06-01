@@ -71,10 +71,6 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 COPY docker/php/php.ini /usr/local/etc/php/conf.d/php.ini
 
-COPY docker/php/job-install-magento.sh /usr/local/bin/job-install-magento.sh
-
-RUN chmod +x /usr/local/bin/job-install-magento.sh
-
 RUN composer config --global --auth http-basic.repo.magento.com \
     ${MAGENTO_PUBLIC_KEY} \
     ${MAGENTO_PRIVATE_KEY}
