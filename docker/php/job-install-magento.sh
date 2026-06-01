@@ -4,23 +4,6 @@ set -e
 
 cd /var/www/html
 
-LOCK_DIR="app/etc/install.lock"
-INSTALL_OWNER=0
-
-cleanup() {
-
-    if [ "$INSTALL_OWNER" = "1" ]; then
-
-        echo "Releasing installation lock..."
-
-        rmdir "$LOCK_DIR" 2>/dev/null || true
-
-    fi
-
-}
-
-trap cleanup EXIT
-
 echo "Waiting MySQL..."
 
 until mysqladmin ping \
@@ -60,100 +43,54 @@ done
 
 echo "Redis OK"
 
-while true; do
+if [ ! -s app/etc/env.php ] || ! grep -q "'crypt'" app/etc/env.php; then
 
-    if [ -s app/etc/env.php ] && grep -q "'crypt'" app/etc/env.php; then
+    echo "Magento not installed"
 
-        echo "Magento already installed"
+    php -d memory_limit=-1 bin/magento setup:install \
+      --base-url="$MAGENTO_BASE_URL" \
+      --db-host="$MYSQL_HOST" \
+      --db-name="$MYSQL_DATABASE" \
+      --db-user="$MYSQL_USER" \
+      --db-password="$MYSQL_PASSWORD" \
+      --admin-firstname="$MAGENTO_ADMIN_FIRSTNAME" \
+      --admin-lastname="$MAGENTO_ADMIN_LASTNAME" \
+      --admin-email="$MAGENTO_ADMIN_EMAIL" \
+      --admin-user="$MAGENTO_ADMIN_USER" \
+      --admin-password="$MAGENTO_ADMIN_PASSWORD" \
+      --language="$MAGENTO_LANGUAGE" \
+      --currency="$MAGENTO_CURRENCY" \
+      --timezone="$MAGENTO_TIMEZONE" \
+      --use-rewrites=1 \
+      --backend-frontname="$MAGENTO_BACKEND_FRONTNAME" \
+      --search-engine=opensearch \
+      --opensearch-host="$OPENSEARCH_HOST" \
+      --opensearch-port="$OPENSEARCH_PORT" \
+      --cache-backend=redis \
+      --cache-backend-redis-server="$REDIS_HOST" \
+      --cache-backend-redis-db=0 \
+      --page-cache=redis \
+      --page-cache-redis-server="$REDIS_HOST" \
+      --page-cache-redis-db=1 \
+      --session-save=redis \
+      --session-save-redis-host="$REDIS_HOST" \
+      --session-save-redis-db=2
 
-        break
+    php -d memory_limit=-1 bin/magento setup:di:compile
 
-    fi
+    sleep 30
 
-    if mkdir "$LOCK_DIR" 2>/dev/null; then
+    php -d memory_limit=-1 bin/magento setup:static-content:deploy -f pt_BR en_US
 
-        echo "Installation lock acquired"
+    php bin/magento indexer:reindex
 
-        INSTALL_OWNER=1
-
-        echo "Magento not installed"
-
-        php -d memory_limit=-1 bin/magento setup:install \
-          --base-url="$MAGENTO_BASE_URL" \
-          --db-host="$MYSQL_HOST" \
-          --db-name="$MYSQL_DATABASE" \
-          --db-user="$MYSQL_USER" \
-          --db-password="$MYSQL_PASSWORD" \
-          --admin-firstname="$MAGENTO_ADMIN_FIRSTNAME" \
-          --admin-lastname="$MAGENTO_ADMIN_LASTNAME" \
-          --admin-email="$MAGENTO_ADMIN_EMAIL" \
-          --admin-user="$MAGENTO_ADMIN_USER" \
-          --admin-password="$MAGENTO_ADMIN_PASSWORD" \
-          --language="$MAGENTO_LANGUAGE" \
-          --currency="$MAGENTO_CURRENCY" \
-          --timezone="$MAGENTO_TIMEZONE" \
-          --use-rewrites=1 \
-          --backend-frontname="$MAGENTO_BACKEND_FRONTNAME" \
-          --search-engine=opensearch \
-          --opensearch-host="$OPENSEARCH_HOST" \
-          --opensearch-port="$OPENSEARCH_PORT" \
-          --cache-backend=redis \
-          --cache-backend-redis-server="$REDIS_HOST" \
-          --cache-backend-redis-db=0 \
-          --page-cache=redis \
-          --page-cache-redis-server="$REDIS_HOST" \
-          --page-cache-redis-db=1 \
-          --session-save=redis \
-          --session-save-redis-host="$REDIS_HOST" \
-          --session-save-redis-db=2
-
-        echo "Magento installed"
-
-        rmdir "$LOCK_DIR" || true
-        INSTALL_OWNER=0
-
-        break
-
-    fi
-
-    echo "Another pod is installing Magento..."
-    sleep 5
-
-done
-
-if [ ! -d generated/code ] || [ -z "$(find generated/code -type f 2>/dev/null)" ]; then
-
-    echo "Running DI compile..."
-
-    php -d memory_limit=-1 \
-      bin/magento setup:di:compile
+    php bin/magento cache:flush
 
 else
 
-    echo "Generated code already exists"
+    echo "Magento already installed"
 
 fi
-
-if [ ! -d pub/static/frontend ] || [ -z "$(find pub/static/frontend -type f 2>/dev/null)" ]; then
-
-    echo "Deploying static content..."
-
-    php -d memory_limit=-1 \
-      bin/magento setup:static-content:deploy -f pt_BR en_US
-
-else
-
-    echo "Static content already exists"
-
-fi
-
-echo "Fixing permissions..."
-
-chown -R 33:33 \
-  app/etc \
-  pub/media \
-  generated \
-  pub/static
 
 echo "Magento bootstrap finished"
 

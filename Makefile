@@ -50,7 +50,7 @@ update-magento:
 	helm upgrade --install magento ./helm/magento -n magento
 
 install-magento-logs:
-	kubectl logs -f job/magento-install -n magento
+	kubectl logs -f deployment/magento -n magento -c php
 
 uninstall-magento:
 	helm uninstall magento -n magento
