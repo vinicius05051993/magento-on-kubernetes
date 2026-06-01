@@ -76,15 +76,29 @@ if [ ! -s app/etc/env.php ] || ! grep -q "'crypt'" app/etc/env.php; then
       --session-save-redis-host="$REDIS_HOST" \
       --session-save-redis-db=2
 
-    php -d memory_limit=-1 bin/magento setup:di:compile
+    echo "Deploying static content..."
 
     sleep 30
 
-    php -d memory_limit=-1 bin/magento setup:static-content:deploy -f pt_BR en_US
+    php -d memory_limit=-1 \
+      bin/magento setup:static-content:deploy -f pt_BR en_US
+
+    echo "Running DI compile..."
+
+    php -d memory_limit=-1 \
+      bin/magento setup:di:compile
+
+    echo "Reindexing..."
 
     php bin/magento indexer:reindex
 
+    echo "Flushing cache..."
+
     php bin/magento cache:flush
+
+    echo "Fixing permissions..."
+
+    chown -R 33:33 app/etc pub/media
 
 else
 
@@ -92,6 +106,4 @@ else
 
 fi
 
-echo "Magento bootstrap finished"
-
-exec php-fpm
+echo "Magento installation job finished"
