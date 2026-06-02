@@ -11,9 +11,7 @@ RUN usermod -u ${UID} -g ${GID} www-data || true
 
 ENV COMPOSER_HOME=/var/www/.config/composer
 
-RUN mkdir -p /var/www/.config/composer \
-    && chmod -R 775 /var/www/.config \
-    && chown -R 33:33 /var/www/.config
+RUN mkdir -p /var/www/.config/composer
 
 WORKDIR /var/www/html
 
@@ -79,6 +77,15 @@ RUN composer create-project \
     --repository-url=https://repo.magento.com/ \
     magento/project-community-edition .
 
-RUN chown -R 33:33 /var/www/html
+#
+# Corrige permissões do Composer
+#
+RUN chown -R www-data:www-data /var/www/.config \
+ && chmod -R u+rwX,go+rX /var/www/.config
+
+#
+# Corrige permissões do Magento
+#
+RUN chown -R www-data:www-data /var/www/html
 
 CMD ["php-fpm"]
