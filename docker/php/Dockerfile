@@ -1,13 +1,7 @@
 FROM php:8.3-fpm
 
-ARG UID=1000
-ARG GID=1000
-
 ARG MAGENTO_PUBLIC_KEY
 ARG MAGENTO_PRIVATE_KEY
-
-RUN groupmod -g ${GID} www-data || true
-RUN usermod -u ${UID} -g ${GID} www-data || true
 
 ENV COMPOSER_HOME=/var/www/.config/composer
 
@@ -87,5 +81,7 @@ RUN chown -R www-data:www-data /var/www/.config \
 # Corrige permissões do Magento
 #
 RUN chown -R www-data:www-data /var/www/html
+
+USER www-data
 
 CMD ["php-fpm"]
