@@ -82,6 +82,4 @@ RUN chown -R www-data:www-data /var/www/.config \
 #
 RUN chown -R www-data:www-data /var/www/html
 
-USER www-data
-
 CMD ["php-fpm"]
