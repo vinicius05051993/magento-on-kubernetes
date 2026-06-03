@@ -1,0 +1,45 @@
+services:
+
+  mysql:
+    image: mysql:8.4
+    container_name: mysql
+    restart: unless-stopped
+
+    command:
+      - --log-bin-trust-function-creators=1
+
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: magento
+      MYSQL_USER: magento
+      MYSQL_PASSWORD: magento
+
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+    networks:
+      kind:
+        ipv4_address: 172.18.255.10
+
+  nfs-server:
+    image: itsthenetwork/nfs-server-alpine:latest
+    container_name: nfs-server
+    restart: unless-stopped
+    privileged: true
+
+    environment:
+      SHARED_DIRECTORY: /exports
+
+    volumes:
+      - ~/nfs-data:/exports
+
+    networks:
+      kind:
+        ipv4_address: 172.18.255.11
+
+volumes:
+  mysql-data:
+
+networks:
+  kind:
+    external: true

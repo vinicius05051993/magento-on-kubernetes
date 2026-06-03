@@ -1,6 +1,6 @@
 namespace: magento
 
-replicaCount: 3
+replicaCount: 1
 
 image:
   repository: ghcr.io/vinicius05051993/magento-php
@@ -25,7 +25,7 @@ mysql:
   host: mysql
   database: magento
   user: magento
-  password: magento123
+  password: magento
   crypt: base64I4vCIg81qX3XkPfO0rzMYsvM0c/nqVomOIPJMEXX6W4=
 
 redis:
@@ -62,3 +62,7 @@ resources:
   limits:
     cpu: "2"
     memory: "3Gi"
+
+externalMysql:
+  ip: 172.18.255.10
+  port: 3306

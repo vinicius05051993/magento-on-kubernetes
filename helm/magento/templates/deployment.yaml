@@ -149,6 +149,14 @@ spec:
                   --session-save-redis-host="$REDIS_HOST" \
                   --session-save-redis-db=2
 
+                echo "Disabling unused modules..."
+
+                php bin/magento module:disable Magento_Marketplace
+                php bin/magento module:disable Magento_Ups
+                php bin/magento module:disable Magento_Usps
+                php bin/magento module:disable Magento_AdminAdobeImsTwoFactorAuth
+                php bin/magento module:disable Magento_TwoFactorAuth
+
                 sleep 30
 
                 php -d memory_limit=-1 \
@@ -161,14 +169,20 @@ spec:
 
                 php bin/magento cache:flush
 
-                chown -R 33:33 app/etc pub/media
-
                 echo "Magento installed"
 
               else
 
                 echo "Magento already installed"
 
+              fi
+
+              chown -R 33:33 app/etc pub/media var generated
+              chmod -R ug+rwX app/etc pub/media var generated
+                
+              if [ -d /var/www/.config/composer ]; then
+                  chown -R 33:33 /var/www/.config/composer
+                  chmod -R u+rwX,go+rX /var/www/.config/composer
               fi
 
           envFrom:
@@ -297,7 +311,8 @@ spec:
 
         - name: magento-media
 
-          emptyDir: {}
+          persistentVolumeClaim:
+            claimName: magento-media-pvc
 
         - name: magento-static
 
