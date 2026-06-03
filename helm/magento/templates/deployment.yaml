@@ -82,8 +82,8 @@ spec:
                 --protocol=TCP \
                 --ssl=0 \
                 -h "$MYSQL_HOST" \
-                -u root \
-                -p"$MYSQL_ROOT_PASSWORD" \
+                -u "$MYSQL_USER" \
+                -p"$MYSQL_PASSWORD" \
                 --silent; do
 
                 echo "MySQL not ready..."
